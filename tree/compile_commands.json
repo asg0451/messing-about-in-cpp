@@ -1,15 +1,1 @@
-[
-    {
-        "arguments": [
-            "c++",
-            "-c",
-            "-std=c++17",
-            "-I/home/miles/cpp/tree/lib",
-            "-o",
-            "/home/miles/cpp/build/tree",
-            "src/tree.cpp"
-        ],
-        "directory": "/home/miles/cpp/tree",
-        "file": "src/tree.cpp"
-    }
-]
+[]
