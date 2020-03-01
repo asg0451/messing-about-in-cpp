@@ -4,22 +4,23 @@
 #include <vector>
 
 namespace Tree {
-class Node {
-private:
-  void ToVecHelper(std::vector<int> &);
+  template <typename E> class Node {
+  private:
+    void ToVecHelper(std::vector<E> &);
 
-public:
-  int value; // no generics yet..
-  std::unique_ptr<Node> left, right;
+  public:
+    E value;
+    std::unique_ptr<Node> left, right;
 
-  Node(int); // constructor
+    Node(E); // constructor
 
-  // like tostring. virtual == potentially overridden?
-  std::ostream &Dump(std::ostream &) const;
-  void Add(int);
-  std::unique_ptr<std::vector<int>> ToVec();
+    // like tostring. virtual == potentially overridden?
+    std::ostream &Dump(std::ostream &) const;
+    void Add(E);
+    std::unique_ptr<std::vector<E>> ToVec();
 
-  // pass by const ref is the way to go for the normal case i think
-  static std::unique_ptr<Node> FromVec(const std::vector<int> &);
-};
+    // pass by const ref is the way to go for the normal case i think
+    static std::unique_ptr<Node> FromVec(const std::vector<E> &);
+  };
+
 } // namespace Tree
