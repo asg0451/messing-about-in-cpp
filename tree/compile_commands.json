@@ -1,1 +1,20 @@
-[]
+[
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-g",
+            "-std=c++17",
+            "-Itree/lib",
+            "-Icommon/lib",
+            "-isystem",
+            "benchmark/include",
+            "-Isparsehash/install/include",
+            "-o",
+            "build/tree",
+            "tree/main.cpp"
+        ],
+        "directory": "/home/miles/cpp",
+        "file": "tree/main.cpp"
+    }
+]
