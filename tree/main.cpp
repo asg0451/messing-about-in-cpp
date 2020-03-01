@@ -4,6 +4,7 @@
 #include <benchmark/benchmark.h>
 #include <iostream>
 #include <memory>
+#include <sparsehash/dense_hash_map>
 #include <sparsehash/sparse_hash_map>
 #include <sparsehash/sparse_hash_set>
 #include <unordered_map>
@@ -11,7 +12,7 @@
 
 static std::unique_ptr<std::vector<int>> setup_large_int_vec(int size) {
   auto large_int_vec = std::make_unique<std::vector<int>>();
-  for (auto i = 0; i < 1000; i++) {
+  for (auto i = 0; i < size; i++) {
     large_int_vec->push_back(i);
   }
   return std::move(large_int_vec);
@@ -48,9 +49,9 @@ static void bench_tree_from_reversed_vec(benchmark::State &state) {
 BENCHMARK(bench_tree_from_reversed_vec);
 
 static void bench_tree_contains(benchmark::State &state) {
-  auto large_int_vec = setup_large_int_vec(1000);
+  auto large_int_vec = setup_large_int_vec(100000);
   random_shuffle(large_int_vec->begin(), large_int_vec->end());
-  auto large_int_vec_2 = setup_large_int_vec(1000);
+  auto large_int_vec_2 = setup_large_int_vec(100000);
   random_shuffle(large_int_vec_2->begin(), large_int_vec_2->end());
   auto root = Tree::Node<int>::FromVec(*large_int_vec.get());
   auto cur_idx = 0;
@@ -65,9 +66,9 @@ static void bench_tree_contains(benchmark::State &state) {
 BENCHMARK(bench_tree_contains);
 
 static void bench_vec_contains(benchmark::State &state) {
-  auto large_int_vec = setup_large_int_vec(1000);
+  auto large_int_vec = setup_large_int_vec(100000);
   random_shuffle(large_int_vec->begin(), large_int_vec->end());
-  auto large_int_vec_2 = setup_large_int_vec(1000);
+  auto large_int_vec_2 = setup_large_int_vec(100000);
   random_shuffle(large_int_vec_2->begin(), large_int_vec_2->end());
   auto cur_idx = 0;
   auto res = large_int_vec->end();
@@ -82,9 +83,9 @@ static void bench_vec_contains(benchmark::State &state) {
 BENCHMARK(bench_vec_contains);
 
 static void bench_umap_contains(benchmark::State &state) {
-  auto large_int_vec = setup_large_int_vec(1000);
+  auto large_int_vec = setup_large_int_vec(100000);
   random_shuffle(large_int_vec->begin(), large_int_vec->end());
-  auto large_int_vec_2 = setup_large_int_vec(1000);
+  auto large_int_vec_2 = setup_large_int_vec(100000);
   random_shuffle(large_int_vec_2->begin(), large_int_vec_2->end());
 
   // also, you can do
@@ -105,9 +106,9 @@ static void bench_umap_contains(benchmark::State &state) {
 BENCHMARK(bench_umap_contains);
 
 static void bench_vec_bsearch(benchmark::State &state) {
-  auto large_int_vec = setup_large_int_vec(1000);
+  auto large_int_vec = setup_large_int_vec(100000);
   random_shuffle(large_int_vec->begin(), large_int_vec->end());
-  auto large_int_vec_2 = setup_large_int_vec(1000);
+  auto large_int_vec_2 = setup_large_int_vec(100000);
   random_shuffle(large_int_vec_2->begin(), large_int_vec_2->end());
 
   auto cur_idx = 0;
@@ -127,10 +128,32 @@ static void bench_vec_bsearch(benchmark::State &state) {
 }
 BENCHMARK(bench_vec_bsearch);
 
-static void bench_google_shs(benchmark::State &state) {
-  auto large_int_vec = setup_large_int_vec(1000);
+static void bench_vec_unamortized_bsearch(benchmark::State &state) {
+  auto large_int_vec = setup_large_int_vec(100000);
   random_shuffle(large_int_vec->begin(), large_int_vec->end());
-  auto large_int_vec_2 = setup_large_int_vec(1000);
+  auto large_int_vec_2 = setup_large_int_vec(100000);
+  random_shuffle(large_int_vec_2->begin(), large_int_vec_2->end());
+
+  auto cur_idx = 0;
+  auto res = 0;
+  for (auto _ : state) {
+
+    // copy and sort every time
+    auto sorted = *large_int_vec.get();
+    std::sort(sorted.begin(), sorted.end());
+
+    res = std::binary_search(large_int_vec->begin(), large_int_vec->end(),
+                             large_int_vec_2->at(cur_idx));
+    cur_idx++;
+    cur_idx %= large_int_vec_2->size();
+  }
+}
+BENCHMARK(bench_vec_unamortized_bsearch);
+
+static void bench_google_shs(benchmark::State &state) {
+  auto large_int_vec = setup_large_int_vec(100000);
+  random_shuffle(large_int_vec->begin(), large_int_vec->end());
+  auto large_int_vec_2 = setup_large_int_vec(100000);
   random_shuffle(large_int_vec_2->begin(), large_int_vec_2->end());
 
   auto set = google::sparse_hash_set<int, std::hash<int>>{};
@@ -148,10 +171,10 @@ static void bench_google_shs(benchmark::State &state) {
 }
 BENCHMARK(bench_google_shs);
 
-static void bench_google_sms(benchmark::State &state) {
-  auto large_int_vec = setup_large_int_vec(1000);
+static void bench_google_shm(benchmark::State &state) {
+  auto large_int_vec = setup_large_int_vec(100000);
   random_shuffle(large_int_vec->begin(), large_int_vec->end());
-  auto large_int_vec_2 = setup_large_int_vec(1000);
+  auto large_int_vec_2 = setup_large_int_vec(100000);
   random_shuffle(large_int_vec_2->begin(), large_int_vec_2->end());
 
   // same interface as std::unordered_map more or less
@@ -168,7 +191,31 @@ static void bench_google_sms(benchmark::State &state) {
     cur_idx %= large_int_vec_2->size();
   }
 }
-BENCHMARK(bench_google_sms);
+BENCHMARK(bench_google_shm);
+
+static void bench_google_dhm(benchmark::State &state) {
+  auto large_int_vec = setup_large_int_vec(100000);
+  random_shuffle(large_int_vec->begin(), large_int_vec->end());
+  auto large_int_vec_2 = setup_large_int_vec(100000);
+  random_shuffle(large_int_vec_2->begin(), large_int_vec_2->end());
+
+  // same interface as std::unordered_map more or less
+  auto map = google::dense_hash_map<int, int, std::hash<int>>{};
+  map.set_empty_key(-1); // need to call this before inserting
+  // neet to set_deleted_key before deleting too but we're not so w/e
+  for (auto e : *large_int_vec) {
+    map.insert({e, e});
+  }
+
+  auto cur_idx = 0;
+  auto res = map.end();
+  for (auto _ : state) {
+    res = map.find(large_int_vec_2->at(cur_idx));
+    cur_idx++;
+    cur_idx %= large_int_vec_2->size();
+  }
+}
+BENCHMARK(bench_google_dhm);
 
 BENCHMARK_MAIN();
 
