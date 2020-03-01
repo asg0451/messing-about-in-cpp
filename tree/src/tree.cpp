@@ -3,30 +3,29 @@
 #include <algorithm> // vector shuffle
 // + includes from tree.h eg memory (unique_ptr), vector
 #include <typeinfo> // typeid
+
+// bad practice but i'm lazy
 using namespace std;
 
 namespace Tree {
   template <typename E> Node<E>::Node(E val) { value = val; }
+  // another way to do the same initalization. wack syntax but ok
+  // template <typename E> Node<E>::Node(E val) : value{val} {}
 
   template <typename E> void Node<E>::Add(E val) {
     // c++ templates use duck typing! if you add something that doesnt implement
     // <= this will error on compile
     auto less_than = val <= value; // this->value
-    if (less_than) {
-      if (left == nullptr) {
-        left = make_unique<Tree::Node<E>>(val);
-        return;
-      } else {
-        return left->Add(val);
-      }
+    if (less_than && left == nullptr) {
+      left = make_unique<Tree::Node<E>>(val);
+    } else if (less_than) {
+      left->Add(val);
+    } else if (right == nullptr) {
+      right = make_unique<Tree::Node<E>>(val);
     } else {
-      if (right == nullptr) {
-        right = make_unique<Tree::Node<E>>(val);
-        return;
-      } else {
-        return right->Add(val);
-      }
+      right->Add(val);
     }
+    return;
   }
 
   template <typename E> std::unique_ptr<std::vector<E>> Node<E>::ToVec() {
@@ -66,14 +65,14 @@ template <typename E>
 std::ostream &operator<<(std::ostream &o, const Node<E> &n) {
   return n.Dump(o);
 }
+
 template <typename E> std::ostream &Node<E>::Dump(std::ostream &o) const {
-  o << "Node(" << value;
+  o << "Node(" << value << ", ";
   if (left != nullptr) {
-    o << ", ";
     o << *left;
   }
+  o << ", ";
   if (right != nullptr) {
-    o << ", ";
     o << *right;
   }
   o << ")";
