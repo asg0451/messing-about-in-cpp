@@ -11,11 +11,12 @@ build/obj:
 
 
 # added src as include. see comment in tree.h
-# added benchmark stuff
+# added benchmark (local), google-sparse-hash (local), curl (system)
 build/%: %/main.cpp # build/obj/%.o
-	clang++ -g -std=c++17 $^ -o $@ -I$(<D)/lib -Icommon/lib \
+	clang++ -g -Wall -std=c++17 $^ -o $@ -I$(<D)/lib -Icommon/lib \
 	-isystem benchmark/include -Lbenchmark/build/src -lbenchmark -lpthread \
-	-Isparsehash/install/include
+	-Isparsehash/install/include \
+	-lcurl
 
 build/obj/%.o: %/src/*.cpp
 	clang++ -g -std=c++17 $^ -o $@ -I`dirname $(<D)`/lib -I$(<D) -Icommon/lib -c

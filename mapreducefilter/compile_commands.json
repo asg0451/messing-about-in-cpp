@@ -1,0 +1,20 @@
+[
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-g",
+            "-std=c++17",
+            "-Imapreducefilter/lib",
+            "-Icommon/lib",
+            "-isystem",
+            "benchmark/include",
+            "-Isparsehash/install/include",
+            "-o",
+            "build/mapreducefilter",
+            "mapreducefilter/main.cpp"
+        ],
+        "directory": "/home/miles/cpp",
+        "file": "mapreducefilter/main.cpp"
+    }
+]

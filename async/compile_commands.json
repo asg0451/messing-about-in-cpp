@@ -1,0 +1,20 @@
+[
+    {
+        "arguments": [
+            "c++",
+            "-c",
+            "-g",
+            "-std=c++17",
+            "-Iasync/lib",
+            "-Icommon/lib",
+            "-isystem",
+            "benchmark/include",
+            "-Isparsehash/install/include",
+            "-o",
+            "build/async",
+            "async/main.cpp"
+        ],
+        "directory": "/home/miles/cpp",
+        "file": "async/main.cpp"
+    }
+]
