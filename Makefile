@@ -1,5 +1,9 @@
 # use eg (cd .. && make build/tree) from inside subproj
 
+CC := clang++
+CC_OPTS := -g -Wall -std=c++17
+
+
 all: build/hello build/tree
 
 clean:
@@ -13,7 +17,7 @@ build/obj:
 # added src as include. see comment in tree.h
 # added benchmark (local), google-sparse-hash (local), curl (system)
 build/%: %/main.cpp # build/obj/%.o
-	clang++ -g -Wall -std=c++17 $^ -o $@ -I$(<D)/lib -Icommon/lib \
+	$(CC) $(CC_OPTS) $^ -o $@ -I$(<D)/lib -Icommon/lib \
 	-isystem benchmark/include -Lbenchmark/build/src -lbenchmark -lpthread \
 	-Isparsehash/install/include \
 	-lcurl

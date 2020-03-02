@@ -39,8 +39,12 @@ int main() {
   // parallelization stuff but works otherwise
   auto res_x4 = std::accumulate(vec.begin(), vec.end(), 0,
                                 [](auto acc, auto e) { return acc + e; });
+
   // equivalent to
   auto res_x5 = std::accumulate(vec.begin(), vec.end(), 0, std::plus<>());
+
+  // yeah not supported yet. g++-9 on 19.10 should have it but well fuck that..
+  // auto res_x6 = std::reduce(vec.begin(), vec.end(), 0, std::plus<>());
 
   std::cout << vec << std::endl;
   std::cout << vec_x2 << std::endl;
