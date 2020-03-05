@@ -11,19 +11,25 @@ namespace Tree {
     void ToVecHelper(std::vector<E> &);
 
   public:
-    E value;
+    E value; // we're copying E into us which i think is right, but we take E as
+             // a const ref everywhere to avoid an extra copy in those methods
     std::unique_ptr<Node> left, right;
+    // NOT a unique_ptr or shared_ptr as we're just observing the value
+    // Node *parent;
 
-    Node(E); // constructor
+    Node(const E &);     // constructor (normal)
+    Node(const Node &);  // constructor (copy)
+    Node(const Node &&); // constructor (move)
 
     // like tostring. virtual == potentially overridden?
     std::ostream &Dump(std::ostream &) const;
-    void Add(E);
-    bool Contains(E);
-    std::unique_ptr<std::vector<E>> ToVec();
+    void Add(const E &);
+    bool Contains(const E &);
+    std::vector<E> ToVec(); // doesnt need to return a unique ptr or ptr bc of
+                            // return value optimization
 
     // pass by const ref is the way to go for the normal case i think
-    static std::unique_ptr<Node> FromVec(const std::vector<E> &);
+    static Node<E> FromVec(const std::vector<E> &);
   };
 
 } // namespace Tree
@@ -35,11 +41,34 @@ std::ostream &operator<<(std::ostream &o, const Tree::Node<E> &n);
 // inline with declarations
 
 namespace Tree {
-  template <typename E> Node<E>::Node(E val) { value = val; }
+  template <typename E> Node<E>::Node(const E &val) { value = val; }
   // another way to do the same initalization. wack syntax but ok
   // template <typename E> Node<E>::Node(E val) : value{val} {}
 
-  template <typename E> void Node<E>::Add(E val) {
+  // constructor (copy)
+  template <typename E> Node<E>::Node(const Node &n) {
+    value = n.value;
+    if (n.left != nullptr) {
+      left = std::make_unique<Node<E>>(*n.left);
+    }
+    if (n.right != nullptr) {
+      right = std::make_unique<Node<E>>(*n.right);
+    }
+  }
+
+  // constructor (move)
+  template <typename E> Node<E>::Node(const Node &&n) {
+    std::cout << "move" << std::endl;
+    value = n.value;
+    if (n.left != nullptr) {
+      left = std::make_unique<Node<E>>(*n.left);
+    }
+    if (n.right != nullptr) {
+      right = std::make_unique<Node<E>>(*n.right);
+    }
+  }
+
+  template <typename E> void Node<E>::Add(const E &val) {
     // c++ templates use duck typing! if you add something that doesnt implement
     // <= this will error on compile
     auto less_than = val <= value; // this->value
@@ -55,7 +84,7 @@ namespace Tree {
     return;
   }
 
-  template <typename E> bool Node<E>::Contains(E val) {
+  template <typename E> bool Node<E>::Contains(const E &val) {
     if (value == val) {
       return true;
     }
@@ -71,11 +100,12 @@ namespace Tree {
     }
   }
 
-  template <typename E> std::unique_ptr<std::vector<E>> Node<E>::ToVec() {
-    auto vec = std::make_unique<std::vector<E>>();
-    // https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#r30-take-smart-pointers-as-parameters-only-to-explicitly-express-lifetime-semantics
-    ToVecHelper(*vec.get()); // this is the way to do it i think
-    return move(vec);
+  // https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#r30-take-smart-pointers-as-parameters-only-to-explicitly-express-lifetime-semantics
+
+  template <typename E> std::vector<E> Node<E>::ToVec() {
+    auto vec = std::vector<E>{};
+    ToVecHelper(vec);
+    return vec; // return value optimization
   }
 
   template <typename E> void Node<E>::ToVecHelper(std::vector<E> &vec) {
@@ -91,15 +121,24 @@ namespace Tree {
     return;
   }
 
-  template <typename E>
-  std::unique_ptr<Node<E>> Node<E>::FromVec(const std::vector<E> &vec) {
-    auto root = std::unique_ptr<Node>{nullptr};
-    for (auto &e : vec) {
-      if (root == nullptr) {
-        root = std::make_unique<Node>(e);
-      } else {
-        root->Add(e);
-      }
+  // preserved for posterity re making unique nullptr with auto
+  // template <typename E>
+  // std::unique_ptr<Node<E>> Node<E>::FromVec(const std::vector<E> &vec) {
+  //   auto root = std::unique_ptr<Node>{nullptr};
+  //   for (auto &e : vec) {
+  //     if (root == nullptr) {
+  //       root = std::make_unique<Node>(e);
+  //     } else {
+  //       root->Add(e);
+  //     }
+  //   }
+  //   return root;
+  // }
+
+  template <typename E> Node<E> Node<E>::FromVec(const std::vector<E> &vec) {
+    Node root = Node(vec[0]);
+    for (auto it = begin(vec) + 1; it != end(vec); it++) {
+      root.Add(*it);
     }
     return root;
   }

@@ -1,7 +1,7 @@
 # use eg (cd .. && make build/tree) from inside subproj
 
 CC := clang++
-CC_OPTS := -g -Wall -std=c++17
+CC_OPTS := -g -Wall -Werror -Wextra -Wpedantic -std=c++17
 
 
 all: build/hello build/tree

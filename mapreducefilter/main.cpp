@@ -20,7 +20,7 @@ int main() {
 
   // map
   auto vec_x2 = std::vector<int>{};
-  std::transform(vec.begin(), vec.end(),
+  std::transform(begin(vec), end(vec),
                  std::back_inserter(vec_x2), // what is this?
                  [](auto e) { return e * 2; });
 
@@ -29,7 +29,7 @@ int main() {
 
   // filter
   auto vec_x3 = std::vector<int>{};
-  std::copy_if(vec.begin(), vec.end(), std::back_inserter(vec_x3),
+  std::copy_if(begin(vec), end(vec), std::back_inserter(vec_x3),
                [](auto e) { return e % 2 == 0; });
 
   // https://en.cppreference.com/w/cpp/algorithm/copy
@@ -37,14 +37,14 @@ int main() {
   // reduce
   // std::reduce is not implemented yet on my machine? this doesnt have the
   // parallelization stuff but works otherwise
-  auto res_x4 = std::accumulate(vec.begin(), vec.end(), 0,
+  auto res_x4 = std::accumulate(begin(vec), end(vec), 0,
                                 [](auto acc, auto e) { return acc + e; });
 
   // equivalent to
-  auto res_x5 = std::accumulate(vec.begin(), vec.end(), 0, std::plus<>());
+  auto res_x5 = std::accumulate(begin(vec), end(vec), 0, std::plus<>());
 
   // yeah not supported yet. g++-9 on 19.10 should have it but well fuck that..
-  // auto res_x6 = std::reduce(vec.begin(), vec.end(), 0, std::plus<>());
+  // auto res_x6 = std::reduce(begin(vec), end(vec), 0, std::plus<>());
 
   std::cout << vec << std::endl;
   std::cout << vec_x2 << std::endl;
